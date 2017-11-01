@@ -17,7 +17,7 @@ $(call inherit-product, device/htc/pico/pico.mk)
 PRODUCT_RELEASE_NAME := Explorer
 
 # Product name
-PRODUCT_NAME := cm_pico
+PRODUCT_NAME := lineage_pico
 PRODUCT_BRAND := HTC
 PRODUCT_DEVICE := pico
 PRODUCT_MODEL := Explorer A310e

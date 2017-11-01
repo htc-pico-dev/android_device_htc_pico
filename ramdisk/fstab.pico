@@ -8,6 +8,6 @@
 /dev/block/mtdblock3     /system      yaffs2     defaults                                 wait
 /dev/block/mtdblock3     /system      yaffs2     remount,ro                               wait
 /dev/block/mtdblock4     /cache       yaffs2     nosuid,nodev                             wait,check
-/dev/block/mtdblock5     /data        yaffs2     nosuid,nodev                             wait,check
+/dev/block/mmcblk0p2     /data        ext4       nosuid,nodev,noatime,nodiratime,nobarrier,noauto_da_alloc,nouser_xattr,data=writeback,commit=30,inode_readahead_blks=64,errors=continue                             wait,check
 
 /devices/platform/msm_sdcc.1/mmc_host/mmc0 auto auto defaults voldmanaged=sdcard0:auto,noemulatedsd

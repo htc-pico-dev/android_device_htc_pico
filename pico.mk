@@ -238,10 +238,6 @@ PRODUCT_COPY_FILES += \
 # PRODUCT_PACKAGES += \
 #     DeviceSettings
 
-#Int2Ext
-PRODUCT_COPY_FILES += \
-    device/htc/pico/prebuilt/etc/40int2ext:system/etc/40int2ext
-
 # Keylayouts
 PRODUCT_COPY_FILES += \
     device/htc/pico/prebuilt/usr/keychars/qwerty2.kcm.bin:system/usr/keychars/qwerty2.kcm.bin \

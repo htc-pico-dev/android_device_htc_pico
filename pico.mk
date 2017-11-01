@@ -99,6 +99,10 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/ramdisk/ueventd.pico.rc:root/ueventd.pico.rc \
     $(LOCAL_PATH)/ramdisk/init.pico.usb.rc:root/init.pico.usb.rc
     
+ifeq ($(WITH_TWRP),true)
+PRODUCT_COPY_FILES +=  $(LOCAL_PATH)/ramdisk/recovery/twrp.fstab:root/etc/twrp.fstab
+endif
+
 # Camera
 PRODUCT_COPY_FILES += \
     device/htc/pico/prebuilt/lib/hw/camera.vendor.msm7x27a.so:system/lib/hw/camera.vendor.msm7x27a.so \

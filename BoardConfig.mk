@@ -192,5 +192,16 @@ TARGET_PROVIDES_POWERHAL := true
 # TWRP
 DEVICE_RESOLUTION := 320x480
 RECOVERY_GRAPHICS_USE_LINELENGTH := true
-TW_NEVER_UMOUNT_SYSTEM := true
 TARGET_RECOVERY_PIXEL_FORMAT := "RGB_565"
+ifeq ($(WITH_TWRP),true)
+RECOVERY_VARIANT := twrp
+TARGET_KERNEL_CONFIG := pico-recovery_defconfig
+TARGET_RECOVERY_INITRC := device/htc/pico/ramdisk/recovery/init.rc
+BOARD_CUSTOM_BOOTIMG_MK := device/htc/pico/ramdisk/recovery/customrecoveryimg.mk
+TW_THEME := watch_mdpi
+TW_TARGET_USES_QCOM_BSP := true
+TW_NEVER_UMOUNT_SYSTEM := true
+TWHAVE_SELINUX := false
+TW_EXCLUDE_SUPERSU := true
+TW_OEM_BUILD := false
+endif

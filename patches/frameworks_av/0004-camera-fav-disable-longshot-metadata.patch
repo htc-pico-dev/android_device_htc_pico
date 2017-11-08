@@ -1,0 +1,33 @@
+From 92acb9e524087d1408dfa59807455532a5361ae5 Mon Sep 17 00:00:00 2001
+From: thewisenerd <thewisenerd@protonmail.com>
+Date: Thu, 9 Nov 2017 01:20:06 +0530
+Subject: [PATCH 4/4] camera: fav: disable longshot, metadata
+
+Change-Id: Ida3adaaaedaf96622299daba5cd9d78e3f24b9ce
+---
+ services/camera/libcameraservice/api1/CameraClient.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/services/camera/libcameraservice/api1/CameraClient.cpp b/services/camera/libcameraservice/api1/CameraClient.cpp
+index bf765ef5a..55e80bedb 100644
+--- a/services/camera/libcameraservice/api1/CameraClient.cpp
++++ b/services/camera/libcameraservice/api1/CameraClient.cpp
+@@ -708,6 +708,7 @@ status_t CameraClient::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2) {
+         enableMsgType(CAMERA_MSG_STATS_DATA);
+     } else if (cmd == CAMERA_CMD_HISTOGRAM_OFF) {
+         disableMsgType(CAMERA_MSG_STATS_DATA);
++#if 0
+     } else if (cmd == CAMERA_CMD_METADATA_ON) {
+         enableMsgType(CAMERA_MSG_META_DATA);
+     } else if (cmd == CAMERA_CMD_METADATA_OFF) {
+@@ -715,6 +716,7 @@ status_t CameraClient::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2) {
+     } else if ( cmd == CAMERA_CMD_LONGSHOT_ON ) {
+         mLongshotEnabled = true;
+     } else if ( cmd == CAMERA_CMD_LONGSHOT_OFF ) {
++#endif
+         mLongshotEnabled = false;
+         disableMsgType(CAMERA_MSG_SHUTTER);
+         disableMsgType(CAMERA_MSG_COMPRESSED_IMAGE);
+-- 
+2.15.0
+

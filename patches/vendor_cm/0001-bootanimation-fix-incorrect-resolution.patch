@@ -1,0 +1,26 @@
+From bb14f7d5c25af90582a72ccc8cf942822152515b Mon Sep 17 00:00:00 2001
+From: thewisenerd <thewisenerd@protonmail.com>
+Date: Thu, 2 Nov 2017 03:24:29 +0530
+Subject: [PATCH] bootanimation: fix incorrect resolution
+
+Change-Id: Iccdbb5b347671a608780f9a1e684ad137248afb1
+---
+ bootanimation/generate-bootanimation.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bootanimation/generate-bootanimation.sh b/bootanimation/generate-bootanimation.sh
+index cab7be8d..be1bd7f9 100755
+--- a/bootanimation/generate-bootanimation.sh
++++ b/bootanimation/generate-bootanimation.sh
+@@ -20,7 +20,7 @@ fi
+ 
+ IMAGEHEIGHT=$(expr $IMAGEWIDTH / 3)
+ 
+-RESOLUTION=""$IMAGEWIDTH"x"$IMAGEHEIGHT""
++RESOLUTION=""$IMAGEWIDTH"x"$IMAGEHEIGHT"!"
+ 
+ for part_cnt in 0 1 2 3 4
+ do
+-- 
+2.14.3
+

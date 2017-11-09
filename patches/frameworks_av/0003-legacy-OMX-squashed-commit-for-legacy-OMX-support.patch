@@ -1,7 +1,7 @@
-From de40dc0de4a55b57bc883abd2de821c700f9e69f Mon Sep 17 00:00:00 2001
+From 6d7d1ec6a1658dcf0999c85fb4dd4c487d7cd598 Mon Sep 17 00:00:00 2001
 From: Alexey Shavykin <ganster0x29@gmail.com>
 Date: Sun, 28 Oct 2012 22:46:34 +0200
-Subject: [PATCH 3/4] legacy OMX: squashed commit for legacy OMX support
+Subject: [PATCH] legacy OMX: squashed commit for legacy OMX support
 
 Enable by setting TARGET_QCOM_LEGACY_OMX := true in BoardConfig.mk.
 
@@ -69,49 +69,24 @@ Date:   Sun Oct 6 20:30:50 2013 +0300
 
 Change-Id: Ieccf29ed8036864634ee167c1e21908377516494
 ---
- include/media/stagefright/DataSource.h             |  4 ++
- media/libstagefright/Android.mk                    |  7 +++
+ media/libstagefright/Android.mk                    |  4 ++
  media/libstagefright/AwesomePlayer.cpp             |  4 ++
- media/libstagefright/DataSource.cpp                | 31 ++++++++++
- media/libstagefright/ExtendedCodec.cpp             |  2 +-
- media/libstagefright/ExtendedExtractor.cpp         | 65 ++++++++++++++++++++-
- media/libstagefright/ExtendedUtils.cpp             |  2 +-
- media/libstagefright/OMXCodec.cpp                  | 23 +++++++-
+ media/libstagefright/OMXCodec.cpp                  | 21 +++++++
  media/libstagefright/colorconversion/Android.mk    |  9 +++
  .../colorconversion/SoftwareRenderer.cpp           | 66 +++++++++++++++++++++-
- media/libstagefright/include/ExtendedExtractor.h   |  8 +++
  media/libstagefright/include/SoftwareRenderer.h    |  3 +
- 12 files changed, 218 insertions(+), 6 deletions(-)
+ 6 files changed, 106 insertions(+), 1 deletion(-)
 
-diff --git a/include/media/stagefright/DataSource.h b/include/media/stagefright/DataSource.h
-index 4b145e075..1f092cb2e 100644
---- a/include/media/stagefright/DataSource.h
-+++ b/include/media/stagefright/DataSource.h
-@@ -50,7 +50,11 @@ public:
-             float *confidence, sp<AMessage> *meta);
- 
-     //if isExtendedExtractor = true, store the location of the sniffer to register
-+#ifdef QCOM_LEGACY_MMPARSER
-+    void registerSniffer_l(SnifferFunc func, bool isExtendedExtractor = false);
-+#else
-     void registerSniffer_l(SnifferFunc func);
-+#endif
-     void registerDefaultSniffers();
- 
-     virtual ~Sniffer() {}
 diff --git a/media/libstagefright/Android.mk b/media/libstagefright/Android.mk
-index af5523599..99bf3928b 100644
+index af5523599..b660415d8 100644
 --- a/media/libstagefright/Android.mk
 +++ b/media/libstagefright/Android.mk
-@@ -188,6 +188,13 @@ ifeq ($(TARGET_ENABLE_OFFLOAD_ENHANCEMENTS),true)
+@@ -188,6 +188,10 @@ ifeq ($(TARGET_ENABLE_OFFLOAD_ENHANCEMENTS),true)
  endif
  endif
  
 +ifeq ($(TARGET_QCOM_LEGACY_OMX),true)
-+    LOCAL_CFLAGS += -DQCOM_LEGACY_OMX -DQCOM_LEGACY_MMPARSER
-+ifneq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS),true)
-+    LOCAL_SRC_FILES += ExtendedMediaDefs.cpp
-+endif
++    LOCAL_CFLAGS += -DQCOM_LEGACY_OMX
 +endif
 +
  ifeq ($(BOARD_HAS_MTK_HARDWARE),true)
@@ -133,227 +108,10 @@ index 8e2f26c93..022b4a7b4 100644
  #define FRAME_DROP_FREQ 0
  #ifdef QCOM_HARDWARE
  #define LPA_MIN_DURATION_USEC_ALLOWED 30000000
-diff --git a/media/libstagefright/DataSource.cpp b/media/libstagefright/DataSource.cpp
-index d3e02adc8..bb114c9b7 100755
---- a/media/libstagefright/DataSource.cpp
-+++ b/media/libstagefright/DataSource.cpp
-@@ -152,6 +152,8 @@ bool Sniffer::sniff(
- 
-     bool forceExtraSniffers = false;
- 
-+    ALOGE("thewisenerd: gets here.");
-+
-     if (*confidence == 3.14f) {
-        // Magic value, as set by MediaExtractor when a video container looks incomplete
-        forceExtraSniffers = true;
-@@ -164,6 +166,12 @@ bool Sniffer::sniff(
-     Mutex::Autolock autoLock(mSnifferMutex);
-     for (List<SnifferFunc>::iterator it = mSniffers.begin();
-          it != mSniffers.end(); ++it) {
-+#ifdef QCOM_LEGACY_MMPARSER
-+        // Don't try to use ExtendedExtractor if already found a suitable from the defaults
-+        if(it == extendedSnifferPosition && *confidence > 0.0) {
-+            return true;
-+        }
-+#endif
-         String8 newMimeType;
-         float newConfidence;
-         sp<AMessage> newMeta;
-@@ -196,7 +204,11 @@ bool Sniffer::sniff(
-     return *confidence > 0.0;
- }
- 
-+#ifdef QCOM_LEGACY_MMPARSER
-+void Sniffer::registerSniffer_l(SnifferFunc func, bool isExtendedExtractor) {
-+#else
- void Sniffer::registerSniffer_l(SnifferFunc func) {
-+#endif
- 
-     for (List<SnifferFunc>::iterator it = mSniffers.begin();
-          it != mSniffers.end(); ++it) {
-@@ -206,6 +218,12 @@ void Sniffer::registerSniffer_l(SnifferFunc func) {
-     }
- 
-     mSniffers.push_back(func);
-+#ifdef QCOM_LEGACY_MMPARSER
-+    if(isExtendedExtractor) {
-+        extendedSnifferPosition = mSniffers.end();
-+        extendedSnifferPosition--;
-+    }
-+#endif
- }
- 
- void Sniffer::registerDefaultSniffers() {
-@@ -224,6 +242,19 @@ void Sniffer::registerDefaultSniffers() {
-     registerSniffer_l(SniffWVM);
- #ifdef ENABLE_AV_ENHANCEMENTS
-     registerSniffer_l(ExtendedExtractor::Sniff);
-+#endif
-+#ifdef QCOM_LEGACY_MMPARSER
-+    List<SnifferFunc> extendedSniffers;
-+    bool flag = true;
-+
-+    ALOGE("thewisenerd: %s", __func__);
-+
-+    extendedSniffers = ExtendedExtractor::getSniffers();
-+    for (List<SnifferFunc>::iterator it = extendedSniffers.begin();
-+        it != extendedSniffers.end(); ++it) {
-+        registerSniffer_l(*it, flag);
-+        flag = false;
-+    }
- #endif
-     registerSnifferPlugin();
- 
-diff --git a/media/libstagefright/ExtendedCodec.cpp b/media/libstagefright/ExtendedCodec.cpp
-index b52da1bd1..fddecb065 100644
---- a/media/libstagefright/ExtendedCodec.cpp
-+++ b/media/libstagefright/ExtendedCodec.cpp
-@@ -45,7 +45,7 @@
- 
- #include <OMX_Component.h>
- 
--#ifdef ENABLE_AV_ENHANCEMENTS
-+#if defined(ENABLE_AV_ENHANCEMENTS) || defined(QCOM_LEGACY_MMPARSER)
- #include <QCMetaData.h>
- #include <QCMediaDefs.h>
- #include <OMX_QCOMExtns.h>
-diff --git a/media/libstagefright/ExtendedExtractor.cpp b/media/libstagefright/ExtendedExtractor.cpp
-index 952f5423d..18caaaa93 100644
---- a/media/libstagefright/ExtendedExtractor.cpp
-+++ b/media/libstagefright/ExtendedExtractor.cpp
-@@ -32,10 +32,14 @@
- #include <dlfcn.h>  // for dlopen/dlclose
- #include "include/ExtendedExtractor.h"
- 
--#ifdef ENABLE_AV_ENHANCEMENTS
-+#if defined(ENABLE_AV_ENHANCEMENTS) || defined(QCOM_LEGACY_MMPARSER)
- 
- namespace android {
- 
-+#ifdef QCOM_LEGACY_MMPARSER
-+static const char* EXTENDED_EXTRACTOR_MMPARSER_LIB = "libmmparser.so";
-+static const char* EXTENDED_EXTRACTOR_MMPARSER_CREATE = "createExtractor";
-+#endif
- static const char* EXTENDED_EXTRACTOR_LIB = "libExtendedExtractor.so";
- static const char* EXTENDED_EXTRACTOR_CREATE = "CreateExtractor";
- static const char* EXTENDED_EXTRACTOR_SNIFF = "SniffExtendedExtractor";
-@@ -47,18 +51,29 @@ typedef bool (*ExtendedExtractorSniff)
-                  (const sp<DataSource> &source, String8 *mimeType,
-                  float *confidence,sp<AMessage> *meta);
- 
-+#ifdef QCOM_LEGACY_MMPARSER
-+static void* loadExtendedExtractorLib(const char* extended_extractor_lib = EXTENDED_EXTRACTOR_LIB) {
-+#else
- static void* loadExtendedExtractorLib() {
-+#endif
-     static void* extendedExtractorLib = NULL;
-     static bool alreadyTriedToLoadLib = false;
- 
-     if(!alreadyTriedToLoadLib) {
--        alreadyTriedToLoadLib = true;
- 
-+#ifdef QCOM_LEGACY_MMPARSER
-+        extendedExtractorLib = ::dlopen(extended_extractor_lib, RTLD_LAZY);
-+#else
-         extendedExtractorLib = ::dlopen(EXTENDED_EXTRACTOR_LIB, RTLD_LAZY);
-+#endif
- 
-         if(extendedExtractorLib == NULL) {
-             ALOGV("Failed to load %s, dlerror = %s \n",
-+#ifdef QCOM_LEGACY_MMPARSER
-+                extended_extractor_lib, dlerror());
-+#else
-                 EXTENDED_EXTRACTOR_LIB, dlerror());
-+#endif
-         }
-     }
- 
-@@ -77,6 +92,12 @@ MediaExtractor* ExtendedExtractor::Create (
-         if (extendedExtractorLib != NULL) {
-             create = (ExtendedExtractorCreate) dlsym (
-                     extendedExtractorLib, EXTENDED_EXTRACTOR_CREATE);
-+#ifdef QCOM_LEGACY_MMPARSER
-+            if (create == NULL) {
-+                create = (ExtendedExtractorCreate) dlsym (
-+                        extendedExtractorLib, EXTENDED_EXTRACTOR_MMPARSER_CREATE);
-+            }
-+#endif
-             alreadyTriedToFindCreateFunction = true;
-         }
-     }
-@@ -95,6 +116,46 @@ MediaExtractor* ExtendedExtractor::Create (
-     return extractor;
- }
- 
-+#ifdef QCOM_LEGACY_MMPARSER
-+List<Sniffer::SnifferFunc> ExtendedExtractor::getSniffers(void) {
-+    List<Sniffer::SnifferFunc> extendedSniffers;
-+
-+    ALOGE( " thewisenerd: %s", __func__ );
-+
-+    void *extendedExtractorLib = loadExtendedExtractorLib(EXTENDED_EXTRACTOR_MMPARSER_LIB);
-+    if (extendedExtractorLib == NULL) {
-+	    ALOGE("  thewisenerd: loadExtendedExtractorLib failed. ");
-+        return extendedSniffers;
-+    }
-+
-+    SnifferArrayFunc snifferArrayFunc = (SnifferArrayFunc) dlsym(
-+            extendedExtractorLib, MEDIA_SNIFFER_ARRAY);
-+    if(snifferArrayFunc==NULL) {
-+        ALOGE(" Unable to init Extended Sniffers, dlerror = %s \n", dlerror());
-+        return extendedSniffers;
-+    }
-+
-+    const Sniffer::SnifferFunc *snifferArray = NULL;
-+    int snifferCount = 0;
-+
-+    //Invoke function in libmmparser to return its array of sniffers.
-+    snifferArrayFunc(&snifferArray, &snifferCount);
-+
-+    ALOGE(" thewisenerd: snifferArray is %x ; snifferCount is %d \n", snifferArray, snifferCount);
-+
-+    if(*snifferArray == NULL) {
-+        ALOGE(" snifferArray is NULL \n");
-+        return extendedSniffers;
-+    }
-+
-+    for (int i=0; i<snifferCount; i++) {
-+        extendedSniffers.push_back(snifferArray[i]);
-+    }
-+
-+    return extendedSniffers;
-+}
-+#endif
-+
- bool ExtendedExtractor::Sniff (
-         const sp<DataSource> &source, String8 *mimeType,
-         float *confidence,sp<AMessage> *meta) {
-diff --git a/media/libstagefright/ExtendedUtils.cpp b/media/libstagefright/ExtendedUtils.cpp
-index 17fbb22e0..f51362464 100644
---- a/media/libstagefright/ExtendedUtils.cpp
-+++ b/media/libstagefright/ExtendedUtils.cpp
-@@ -51,7 +51,7 @@ static const int64_t kMaxAVSyncLateMargin     = 250000;
- static const unsigned kDefaultRtpPortRangeStart = 15550;
- static const unsigned kDefaultRtpPortRangeEnd = 65535;
- 
--#ifdef ENABLE_AV_ENHANCEMENTS
-+#if defined(ENABLE_AV_ENHANCEMENTS) || defined(QCOM_LEGACY_MMPARSER)
- 
- #include <QCMetaData.h>
- #include <QCMediaDefs.h>
 diff --git a/media/libstagefright/OMXCodec.cpp b/media/libstagefright/OMXCodec.cpp
-index 551807ef1..bf5cdd226 100644
+index 551807ef1..53a584e54 100644
 --- a/media/libstagefright/OMXCodec.cpp
 +++ b/media/libstagefright/OMXCodec.cpp
-@@ -59,7 +59,7 @@
- 
- #include "include/avc_utils.h"
- 
--#ifdef ENABLE_AV_ENHANCEMENTS
-+#if defined(ENABLE_AV_ENHANCEMENTS) || defined(QCOM_LEGACY_MMPARSER)
- #include <QCMediaDefs.h>
- #include <QCMetaData.h>
- #include <QOMX_AudioExtensions.h>
 @@ -116,6 +116,11 @@ const static int64_t kBufferFilledEventTimeOutNs = 3000000000LL;
  // component in question is buggy or not.
  const static uint32_t kMaxColorFormatSupported = 1000;
@@ -554,32 +312,6 @@ index 6df9bec15..be36a1ceb 100644
      } else {
          CHECK_EQ(mColorFormat, OMX_TI_COLOR_FormatYUV420PackedSemiPlanar);
          if ((size_t)mWidth * mHeight * 3 / 2 > size) {
-diff --git a/media/libstagefright/include/ExtendedExtractor.h b/media/libstagefright/include/ExtendedExtractor.h
-index 3bce1ff99..a8e9774b4 100644
---- a/media/libstagefright/include/ExtendedExtractor.h
-+++ b/media/libstagefright/include/ExtendedExtractor.h
-@@ -34,6 +34,11 @@
- namespace android {
- 
- class MediaExtractor;
-+#ifdef QCOM_LEGACY_MMPARSER
-+    typedef void (*SnifferArrayFunc)(const Sniffer::SnifferFunc* snifferArray[], int *count);
-+    static const char* MEDIA_SNIFFER_ARRAY = "snifferArray";
-+#endif
-+
- class ExtendedExtractor
- {
- public:
-@@ -42,6 +47,9 @@ public:
-     static bool Sniff (
-             const sp<DataSource> &source, String8 *mimeType,
-             float *confidence,sp<AMessage> *meta);
-+#ifdef QCOM_LEGACY_MMPARSER
-+    static List<Sniffer::SnifferFunc> getSniffers(void);
-+#endif
- };
- 
- }  // namespace android
 diff --git a/media/libstagefright/include/SoftwareRenderer.h b/media/libstagefright/include/SoftwareRenderer.h
 index 7ab004239..27bcf6c1e 100644
 --- a/media/libstagefright/include/SoftwareRenderer.h

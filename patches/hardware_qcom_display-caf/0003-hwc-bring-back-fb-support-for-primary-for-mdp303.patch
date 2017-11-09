@@ -1,7 +1,7 @@
-From c2d8ec5eb11a8233850484b12b15a6e3b263a4d5 Mon Sep 17 00:00:00 2001
+From a6368715f3c582d28359bb3d14f126064b131c09 Mon Sep 17 00:00:00 2001
 From: RonGokhale <cips173@gmail.com>
 Date: Tue, 1 Jul 2014 19:44:18 +0530
-Subject: [PATCH] hwc: bring back fb support for primary for mdp303.
+Subject: [PATCH 3/4] hwc: bring back fb support for primary for mdp303.
 
 Change-Id: I98cf0fdae6b9b1100c97ac319ab1c321f55fe507
 ---
@@ -29,7 +29,7 @@ index 8ce7ea9..ed719a5 100644
          }
      }
 diff --git a/libhwcomposer/hwc_utils.cpp b/libhwcomposer/hwc_utils.cpp
-index 413bedb..d5794be 100644
+index c6e4966..f45aca7 100644
 --- a/libhwcomposer/hwc_utils.cpp
 +++ b/libhwcomposer/hwc_utils.cpp
 @@ -36,6 +36,9 @@
@@ -81,3 +81,6 @@ index a9eb06f..e4cf23d 100644
  
      //CopyBit objects
      qhwc::CopyBit *mCopyBit[HWC_NUM_DISPLAY_TYPES];
+-- 
+2.15.0
+

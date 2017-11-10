@@ -1,0 +1,46 @@
+From 52533be12b08436382cb50b3937f24d09ec736f8 Mon Sep 17 00:00:00 2001
+From: Rashed Abdel-Tawab <rashed@linux.com>
+Date: Sat, 5 Aug 2017 23:11:35 -0400
+Subject: [PATCH 37/39] extract_files: Adjust deodex path and tmpdir
+
+* Make a tempdir using the mktemp command rather than just making a
+  dir in /tmp to accomodate for systems that don't set proper perms
+  or dont have /tmp
+* Fix the deodex procedure to pull files from the right path
+
+Change-Id: I181863599b6670e3a149069dbb7b13ebf73bae8e
+---
+ build/tools/extract_utils.sh | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 239de357..95e534dd 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -26,8 +26,7 @@ COMMON=-1
+ ARCHES=
+ FULLY_DEODEXED=-1
+ 
+-TMPDIR="/tmp/extractfiles.$$"
+-mkdir "$TMPDIR"
++TMPDIR=$(mktemp -d)
+ 
+ #
+ # cleanup
+@@ -700,7 +699,12 @@ function oat2dex() {
+         echo "Checking if system is odexed and locating boot.oats..."
+         for ARCH in "arm64" "arm" "x86_64" "x86"; do
+             mkdir -p "$TMPDIR/system/framework/$ARCH"
+-            if get_file "system/framework/$ARCH/" "$TMPDIR/system/framework/" "$SRC"; then
++            if [ -d "$SRC/framework" ] && [ "$SRC" != "adb" ]; then
++                ARCHDIR="framework/$ARCH/"
++            else
++                ARCHDIR="system/framework/$ARCH/"
++            fi
++            if get_file "$ARCHDIR" "$TMPDIR/system/framework/" "$SRC"; then
+                 ARCHES+="$ARCH "
+             else
+                 rmdir "$TMPDIR/system/framework/$ARCH"
+-- 
+2.15.0
+

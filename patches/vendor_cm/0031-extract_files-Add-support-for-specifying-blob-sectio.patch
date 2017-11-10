@@ -1,0 +1,74 @@
+From aeb796ead1af49546a34047b69150c7222d1ad1f Mon Sep 17 00:00:00 2001
+From: Rashed Abdel-Tawab <rashed@linux.com>
+Date: Tue, 4 Apr 2017 02:48:18 -0400
+Subject: [PATCH 31/39] extract_files: Add support for specifying blob sections
+
+Sometimes the need arises to update one specific subset of blobs
+while holding others steady. Introduce a way to specify the "section"
+of blobs to update (obviously requires the proprietary-files to be
+properly split up first)
+
+Requires additional changes in device tree extract_files.sh to support
+passing the additional arguments
+
+Change-Id: I98feab56f8bfade2818b1b5264e019440d4c57c5
+---
+ build/tools/extract_utils.sh | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index d241cf5a..76fa63b5 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -555,6 +555,7 @@ function _adb_connected {
+ # parse_file_list:
+ #
+ # $1: input file
++# $2: blob section in file - optional
+ #
+ # Sets PRODUCT_PACKAGES and PRODUCT_COPY_FILES while parsing the input file
+ #
+@@ -567,6 +568,14 @@ function parse_file_list() {
+         exit 1
+     fi
+ 
++    if [ $# -eq 2 ]; then
++        LIST=$TMPDIR/files.txt
++        cat $1 | sed -n '/# '"$2"'/I,/^\s*$/p' > $LIST
++    else
++        LIST=$1
++    fi
++
++
+     PRODUCT_PACKAGES_LIST=()
+     PRODUCT_PACKAGES_HASHES=()
+     PRODUCT_COPY_FILES_LIST=()
+@@ -595,7 +604,7 @@ function parse_file_list() {
+             PRODUCT_COPY_FILES_HASHES+=("$HASH")
+         fi
+ 
+-    done < <(egrep -v '(^#|^[[:space:]]*$)' "$1" | LC_ALL=C sort | uniq)
++    done < <(egrep -v '(^#|^[[:space:]]*$)' "$LIST" | LC_ALL=C sort | uniq)
+ }
+ 
+ #
+@@ -779,6 +788,7 @@ function fix_xml() {
+ #
+ # $1: file containing the list of items to extract
+ # $2: path to extracted system folder, an ota zip file, or "adb" to extract from device
++# $3: section in list file to extract - optional
+ #
+ function extract() {
+     if [ -z "$OUTDIR" ]; then
+@@ -786,7 +796,7 @@ function extract() {
+         exit 1
+     fi
+ 
+-    parse_file_list "$1"
++    parse_file_list "$1" "$3"
+ 
+     # Allow failing, so we can try $DEST and/or $FILE
+     set +e
+-- 
+2.15.0
+

@@ -1,0 +1,30 @@
+From 23e57dd2a0f0819f3577e7fef0bb53e265a32bdc Mon Sep 17 00:00:00 2001
+From: Rashed Abdel-Tawab <rashed@linux.com>
+Date: Tue, 4 Apr 2017 18:03:35 -0400
+Subject: [PATCH 32/39] extract_files: Add support for paths without system/
+
+Sometime blob directories are contained in dirs not named system
+(ex. extracting blobs from another vendor dir) so check if the file
+exists without system/ before appending "system/" to filenames.
+
+Change-Id: I4ba946e178260b4f4804b1ac4422645e3085c665
+---
+ build/tools/extract_utils.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 76fa63b5..0e6ffc3b 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -873,6 +873,8 @@ function extract() {
+             TARGET="$FROM"
+             OUTPUT_DIR="$OUTPUT_DIR/rootfs"
+             TMP_DIR="$TMP_DIR/rootfs"
++        elif [ -f "$SRC/$FILE" ] && [ "$SRC" != "adb" ]; then
++            TARGET="$FROM"
+         else
+             TARGET="system/$FROM"
+             FILE="system/$FILE"
+-- 
+2.15.0
+

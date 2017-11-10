@@ -1,0 +1,62 @@
+From 583e5ced02da8de27aedf7de638e90f45ac35ebe Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Wed, 27 Jul 2016 15:00:05 +0100
+Subject: [PATCH 06/39] cm: extract_utils: Rewrite file existence checks
+
+Change-Id: I7c1584ec7162e0e18fae471e6aceef6123a5d10b
+---
+ build/tools/extract_utils.sh | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 26032034..8cd2caf2 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -500,11 +500,18 @@ function _adb_connected {
+ };
+ 
+ #
+-# parse_file_list
++# parse_file_list:
++#
++# $1: input file
++#
++# Sets PRODUCT_PACKAGES and PRODUCT_COPY_FILES while parsing the input file
+ #
+ function parse_file_list() {
+-    if [ ! -e "$1" ]; then
+-        echo "$1 does not exist!"
++    if [ -z "$1" ]; then
++        echo "An input file is expected!"
++        exit 1
++    elif [ ! -f "$1" ]; then
++        echo "Input file "$1" does not exist!"
+         exit 1
+     fi
+ 
+@@ -534,10 +541,6 @@ function parse_file_list() {
+ # the product makefile.
+ #
+ function write_makefiles() {
+-    if [ ! -e "$1" ]; then
+-        echo "$1 does not exist!"
+-        exit 1
+-    fi
+     parse_file_list "$1"
+     write_product_copy_files
+     write_product_packages
+@@ -580,11 +583,6 @@ function init_adb_connection() {
+ # $2: path to extracted system folder, or "adb" to extract from device
+ #
+ function extract() {
+-    if [ ! -e "$1" ]; then
+-        echo "$1 does not exist!"
+-        exit 1
+-    fi
+-
+     if [ -z "$OUTDIR" ]; then
+         echo "Output dir not set!"
+         exit 1
+-- 
+2.15.0
+

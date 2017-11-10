@@ -1,0 +1,36 @@
+From c0a15046819e78d22a3583a2e5a4404aafc37472 Mon Sep 17 00:00:00 2001
+From: Gabriele M <moto.falcon.git@gmail.com>
+Date: Thu, 5 Jan 2017 22:10:00 +0100
+Subject: [PATCH 21/39] extract_utils: Update backsmali command
+
+-e no longer exists starting from v2.2b3, so update the
+command. While at it, add the logic to deal with Android N
+separated boot oat files.
+
+Change-Id: Iab8e3946d6421824fea74e26dc43d2db38573022
+---
+ build/tools/extract_utils.sh | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 12537006..5461cf4f 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -690,8 +690,12 @@ function oat2dex() {
+         if get_file "$OAT" "$TMPDIR" "$SRC"; then
+             java -jar "$BAKSMALIJAR" deodex -o "$TMPDIR/dexout" -b "$BOOTOAT" -d "$TMPDIR" "$TMPDIR/$(basename "$OAT")"
+         elif [[ "$CM_TARGET" =~ .jar$ ]]; then
+-            # try to extract classes.dex from boot.oat for framework jars
+-            java -jar "$BAKSMALIJAR" deodex -o "$TMPDIR/dexout" -b "$BOOTOAT" -d "$TMPDIR" -e "/$OEM_TARGET" "$BOOTOAT"
++            # try to extract classes.dex from boot.oats for framework jars
++            JAROAT="$TMPDIR/system/framework/$ARCH/boot-$(basename ${OEM_TARGET%.*}).oat"
++            if [ ! -f "$JAROAT" ]; then
++                JAROAT=$BOOTOAT;
++            fi
++            java -jar "$BAKSMALIJAR" deodex -o "$TMPDIR/dexout" -b "$BOOTOAT" -d "$TMPDIR" "$JAROAT/$OEM_TARGET"
+         else
+             continue
+         fi
+-- 
+2.15.0
+

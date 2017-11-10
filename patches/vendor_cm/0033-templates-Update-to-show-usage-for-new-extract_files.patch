@@ -1,0 +1,69 @@
+From c33a243dc58568c72f13a440349ca9c547825d47 Mon Sep 17 00:00:00 2001
+From: Rashed Abdel-Tawab <rashed@linux.com>
+Date: Sun, 30 Jul 2017 14:09:24 -0400
+Subject: [PATCH 33/39] templates: Update to show usage for new extract_files
+ features
+
+* Allows extracting only a specific section from proprietary-files.txt
+* Defaults to not cleaning vendor folder before extraction
+* Adds script options rather than depending on apredefined order
+
+Change-Id: I74cd3bf4a1f652232c97c78d6164f0730599c1a7
+---
+ build/templates/extract-files.sh | 36 +++++++++++++++++++++---------------
+ 1 file changed, 21 insertions(+), 15 deletions(-)
+
+diff --git a/build/templates/extract-files.sh b/build/templates/extract-files.sh
+index d09d2fdc..9d13cb01 100755
+--- a/build/templates/extract-files.sh
++++ b/build/templates/extract-files.sh
+@@ -34,25 +34,31 @@ if [ ! -f "$HELPER" ]; then
+ fi
+ . "$HELPER"
+ 
+-if [ $# -eq 0 ]; then
++# default to not sanitizing the vendor folder before extraction
++clean_vendor=false
++
++while [ "$1" != "" ]; do
++    case $1 in
++        -p | --path )           shift
++                                SRC=$1
++                                ;;
++        -s | --section )        shift
++                                SECTION=$1
++                                clean_vendor=false
++                                ;;
++        -c | --clean-vendor )   clean_vendor=true
++                                ;;
++    esac
++    shift
++done
++
++if [ -z "$SRC" ]; then
+     SRC=adb
+-else
+-    if [ $# -eq 1 ]; then
+-        SRC=$1
+-    else
+-        echo "$0: bad number of arguments"
+-        echo ""
+-        echo "usage: $0 [PATH_TO_EXPANDED_ROM]"
+-        echo ""
+-        echo "If PATH_TO_EXPANDED_ROM is not specified, blobs will be extracted from"
+-        echo "the device using adb pull."
+-        exit 1
+-    fi
+ fi
+ 
+ # Initialize the helper
+-setup_vendor "$DEVICE" "$VENDOR" "$CM_ROOT"
++setup_vendor "$DEVICE" "$VENDOR" "$CM_ROOT" false $clean_vendor
+ 
+-extract "$MY_DIR"/proprietary-files.txt "$SRC"
++extract "$MY_DIR"/proprietary-files.txt "$SRC" "$SECTION"
+ 
+ "$MY_DIR"/setup-makefiles.sh
+-- 
+2.15.0
+

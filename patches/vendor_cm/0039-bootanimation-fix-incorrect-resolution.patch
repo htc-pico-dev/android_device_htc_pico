@@ -1,7 +1,7 @@
-From bb14f7d5c25af90582a72ccc8cf942822152515b Mon Sep 17 00:00:00 2001
+From 2eae7275ac706863039c9fad94071cf1297948fe Mon Sep 17 00:00:00 2001
 From: thewisenerd <thewisenerd@protonmail.com>
 Date: Thu, 2 Nov 2017 03:24:29 +0530
-Subject: [PATCH] bootanimation: fix incorrect resolution
+Subject: [PATCH 39/39] bootanimation: fix incorrect resolution
 
 Change-Id: Iccdbb5b347671a608780f9a1e684ad137248afb1
 ---
@@ -22,5 +22,5 @@ index cab7be8d..be1bd7f9 100755
  for part_cnt in 0 1 2 3 4
  do
 -- 
-2.14.3
+2.15.0
 

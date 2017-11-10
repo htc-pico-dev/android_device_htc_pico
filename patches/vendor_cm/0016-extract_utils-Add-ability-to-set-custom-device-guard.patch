@@ -1,0 +1,58 @@
+From 7995d8e6eaf68b30d1b365edc709d8072779d70b Mon Sep 17 00:00:00 2001
+From: Rashed Abdel-Tawab <rashed@linux.com>
+Date: Sun, 2 Oct 2016 01:00:54 -0400
+Subject: [PATCH 16/39] extract_utils: Add ability to set custom device guard
+
+In some cases we may not want to check against TARGET_DEVICE so allow
+setting a custom variable to check against
+
+Change-Id: Ia2fb338f453137a95a59c6940b0cc16b261505bf
+---
+ build/tools/extract_utils.sh | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 771e6bfb..b883219f 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -459,6 +459,7 @@ EOF
+ # write_headers:
+ #
+ # $1: devices falling under common to be added to guard - optional
++# $2: custom guard - optional
+ #
+ # Calls write_header for each of the makefiles and creates
+ # the initial path declaration and device guard for the
+@@ -466,13 +467,19 @@ EOF
+ #
+ function write_headers() {
+     write_header "$ANDROIDMK"
++
++    GUARD="$2"
++    if [ -z "$GUARD" ]; then
++        GUARD="TARGET_DEVICE"
++    fi
++
+     cat << EOF >> "$ANDROIDMK"
+ LOCAL_PATH := \$(call my-dir)
+ 
+ EOF
+     if [ "$COMMON" -ne 1 ]; then
+         cat << EOF >> "$ANDROIDMK"
+-ifeq (\$(TARGET_DEVICE),$DEVICE)
++ifeq (\$($GUARD),$DEVICE)
+ 
+ EOF
+     else
+@@ -481,7 +488,7 @@ EOF
+             exit 1
+         fi
+         cat << EOF >> "$ANDROIDMK"
+-ifneq (\$(filter $1,\$(TARGET_DEVICE)),)
++ifneq (\$(filter $1,\$($GUARD)),)
+ 
+ EOF
+     fi
+-- 
+2.15.0
+

@@ -1,0 +1,77 @@
+From 792d833b17dcb66cfa136e79baf84eb64ab6e9b3 Mon Sep 17 00:00:00 2001
+From: Steve Kondik <steve@cyngn.com>
+Date: Thu, 28 Jul 2016 14:15:46 -0700
+Subject: [PATCH 05/39] extract_utils: Don't write multilib tags on 32-bit only
+ devices
+
+Change-Id: I41b6f71c45a566ba1b4dd5cb72c4ebf44388b363
+---
+ build/tools/extract_utils.sh | 32 +++++++++++++++++++++++---------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 18589973..26032034 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -224,7 +224,7 @@ function write_packages() {
+             else
+                 printf 'LOCAL_SRC_FILES := %s/lib/%s\n' "$SRC" "$FILE"
+             fi
+-            if [ "$EXTRA" != "none" ]; then
++            if [ ! -z "$EXTRA" ]; then
+                 printf 'LOCAL_MULTILIB := %s\n' "$EXTRA"
+             fi
+         elif [ "$CLASS" = "APPS" ]; then
+@@ -299,27 +299,41 @@ function write_product_packages() {
+     local LIB32=( $(comm -23 <(printf '%s\n'  "${T_LIB32[@]}") <(printf '%s\n' "${MULTILIBS[@]}")) )
+     local LIB64=( $(comm -23 <(printf '%s\n' "${T_LIB64[@]}") <(printf '%s\n' "${MULTILIBS[@]}")) )
+ 
++    local T_V_LIB32=( $(prefix_match "vendor/lib/") )
++    local T_V_LIB64=( $(prefix_match "vendor/lib64/") )
++    local V_MULTILIBS=( $(comm -12 <(printf '%s\n' "${T_V_LIB32[@]}") <(printf '%s\n' "${T_V_LIB64[@]}")) )
++    local V_LIB32=( $(comm -23 <(printf '%s\n' "${T_V_LIB32[@]}") <(printf '%s\n' "${V_MULTILIBS[@]}")) )
++    local V_LIB64=( $(comm -23 <(printf '%s\n' "${T_V_LIB64[@]}") <(printf '%s\n' "${V_MULTILIBS[@]}")) )
++
++    local USE_MULTILIB=0
++    if [ "${#MULTILIBS[@]}" -gt "0" -o "${#LIB64[@]}" -gt "0" \
++            -o "${#V_MULTILIBS[@]}" -gt "0" -o "${#V_LIB64[@]}" -gt "0" ] ; then
++        USE_MULTILIB=1
++    fi
++
+     if [ "${#MULTILIBS[@]}" -gt "0" ]; then
+         write_packages "SHARED_LIBRARIES" "false" "both" "MULTILIBS" >> "$ANDROIDMK"
+     fi
+     if [ "${#LIB32[@]}" -gt "0" ]; then
+-        write_packages "SHARED_LIBRARIES" "false" "32" "LIB32" >> "$ANDROIDMK"
++        local EXTRA=
++        if [ "$USE_MULTILIB" -eq "1" ]; then
++            EXTRA="32"
++        fi
++        write_packages "SHARED_LIBRARIES" "false" "$EXTRA" "LIB32" >> "$ANDROIDMK"
+     fi
+     if [ "${#LIB64[@]}" -gt "0" ]; then
+         write_packages "SHARED_LIBRARIES" "false" "64" "LIB64" >> "$ANDROIDMK"
+     fi
+ 
+-    local T_V_LIB32=( $(prefix_match "vendor/lib/") )
+-    local T_V_LIB64=( $(prefix_match "vendor/lib64/") )
+-    local V_MULTILIBS=( $(comm -12 <(printf '%s\n' "${T_V_LIB32[@]}") <(printf '%s\n' "${T_V_LIB64[@]}")) )
+-    local V_LIB32=( $(comm -23 <(printf '%s\n' "${T_V_LIB32[@]}") <(printf '%s\n' "${V_MULTILIBS[@]}")) )
+-    local V_LIB64=( $(comm -23 <(printf '%s\n' "${T_V_LIB64[@]}") <(printf '%s\n' "${V_MULTILIBS[@]}")) )
+-
+     if [ "${#V_MULTILIBS[@]}" -gt "0" ]; then
+         write_packages "SHARED_LIBRARIES" "true" "both" "V_MULTILIBS" >> "$ANDROIDMK"
+     fi
+     if [ "${#V_LIB32[@]}" -gt "0" ]; then
+-        write_packages "SHARED_LIBRARIES" "true" "32" "V_LIB32" >> "$ANDROIDMK"
++        local EXTRA=
++        if [ "$USE_MULTILIB" -eq "1" ]; then
++            EXTRA="32"
++        fi
++        write_packages "SHARED_LIBRARIES" "true" "$EXTRA" "V_LIB32" >> "$ANDROIDMK"
+     fi
+     if [ "${#V_LIB64[@]}" -gt "0" ]; then
+         write_packages "SHARED_LIBRARIES" "true" "64" "V_LIB64" >> "$ANDROIDMK"
+-- 
+2.15.0
+

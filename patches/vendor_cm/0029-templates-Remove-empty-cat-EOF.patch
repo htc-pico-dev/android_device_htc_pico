@@ -1,0 +1,27 @@
+From 4a1c1ee7a903349e783468a0fe0d993cc0236d2e Mon Sep 17 00:00:00 2001
+From: Michael Bestas <mkbestas@lineageos.org>
+Date: Wed, 26 Jul 2017 18:42:45 +0300
+Subject: [PATCH 29/39] templates: Remove empty cat << EOF
+
+Change-Id: I68388202f42b7522f3fd3965d4ce518c142e7ce3
+---
+ build/templates/setup-makefiles.sh | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/build/templates/setup-makefiles.sh b/build/templates/setup-makefiles.sh
+index 81e864d3..43baafe3 100755
+--- a/build/templates/setup-makefiles.sh
++++ b/build/templates/setup-makefiles.sh
+@@ -44,9 +44,5 @@ write_headers
+ 
+ write_makefiles "$MY_DIR"/proprietary-files.txt
+ 
+-cat << EOF >> "$ANDROIDMK"
+-
+-EOF
+-
+ # Finish
+ write_footers
+-- 
+2.15.0
+

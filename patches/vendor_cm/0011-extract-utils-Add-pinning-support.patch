@@ -1,0 +1,203 @@
+From e873d21aa41c035c676cb5c20250b069e361b2bc Mon Sep 17 00:00:00 2001
+From: Steve Kondik <steve@cyngn.com>
+Date: Sun, 14 Aug 2016 03:55:08 -0700
+Subject: [PATCH 11/39] extract-utils: Add pinning support
+
+ * In many cases, we would like to keep certain files which do not
+   exactly match what might be extracted from a factory ROM. This
+   becomes extremely annoying over time to manually reconstruct,
+   and it's easy to miss these special cases when updating to a
+   new vendor release. It's also useful to flag additions which
+   aren't found in the upstream release at all.
+ * To solve this, we can now "pin" files to a specific sha1 hash.
+   Simply append the sha1sum of the file to the appropriate line
+   in your bloblist, prepended by a | delimiter.
+ * This works by backing up the current files first, running the
+   extraction, then checking if any pinned files need to be
+   restored.
+ * Also add an exit trap to clean up all of our tempfiles
+
+Change-Id: I2010b5175b5701e19a3efb112e8907062ca37d66
+---
+ build/tools/extract_utils.sh | 91 ++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 80 insertions(+), 11 deletions(-)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index 2e93ca7f..fb7602b9 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -16,7 +16,9 @@
+ #
+ 
+ PRODUCT_COPY_FILES_LIST=()
++PRODUCT_COPY_FILES_HASHES=()
+ PRODUCT_PACKAGES_LIST=()
++PRODUCT_PACKAGES_HASHES=()
+ PACKAGE_LIST=()
+ VENDOR_STATE=-1
+ VENDOR_RADIO_STATE=-1
+@@ -27,6 +29,17 @@ FULLY_DEODEXED=-1
+ TMPDIR="/tmp/extractfiles.$$"
+ mkdir "$TMPDIR"
+ 
++#
++# cleanup
++#
++# kill our tmpfiles with fire on exit
++#
++function cleanup() {
++    rm -rf "${TMPDIR:?}"
++}
++
++trap cleanup EXIT INT TERM ERR
++
+ #
+ # setup_vendor
+ #
+@@ -510,16 +523,31 @@ function parse_file_list() {
+     fi
+ 
+     PRODUCT_PACKAGES_LIST=()
++    PRODUCT_PACKAGES_HASHES=()
+     PRODUCT_COPY_FILES_LIST=()
++    PRODUCT_COPY_FILES_HASHES=()
+ 
+     while read -r line; do
+         if [ -z "$line" ]; then continue; fi
+ 
++        # If the line has a pipe delimiter, a sha1 hash should follow.
++        # This indicates the file should be pinned and not overwritten
++        # when extracting files.
++        local SPLIT=(${line//\|/ })
++        local COUNT=${#SPLIT[@]}
++        local SPEC=${SPLIT[0]}
++        local HASH="x"
++        if [ "$COUNT" -gt "1" ]; then
++            HASH=${SPLIT[1]}
++        fi
++
+         # if line starts with a dash, it needs to be packaged
+-        if [[ "$line" =~ ^- ]]; then
+-            PRODUCT_PACKAGES_LIST+=("${line#-}")
++        if [[ "$SPEC" =~ ^- ]]; then
++            PRODUCT_PACKAGES_LIST+=("${SPEC#-}")
++            PRODUCT_PACKAGES_HASHES+=("$HASH")
+         else
+-            PRODUCT_COPY_FILES_LIST+=("$line")
++            PRODUCT_COPY_FILES_LIST+=("$SPEC")
++            PRODUCT_COPY_FILES_HASHES+=("$HASH")
+         fi
+ 
+     done < <(egrep -v '(^#|^[[:space:]]*$)' "$1" | sort | uniq)
+@@ -621,6 +649,10 @@ function oat2dex() {
+         FULLY_DEODEXED=1 && return 0 # system is fully deodexed, return
+     fi
+ 
++    if [ ! -f "$CM_TARGET" ]; then
++        return;
++    fi
++
+     if grep "classes.dex" "$CM_TARGET" >/dev/null; then
+         return 0 # target apk|jar is already odexed, return
+     fi
+@@ -708,16 +740,21 @@ function extract() {
+     set +e
+ 
+     local FILELIST=( ${PRODUCT_COPY_FILES_LIST[@]} ${PRODUCT_PACKAGES_LIST[@]} )
++    local HASHLIST=( ${PRODUCT_COPY_FILES_HASHES[@]} ${PRODUCT_PACKAGES_HASHES[@]} )
+     local COUNT=${#FILELIST[@]}
+     local SRC="$2"
+     local OUTPUT_ROOT="$CM_ROOT"/"$OUTDIR"/proprietary
++    local OUTPUT_TMP="$TMPDIR"/"$OUTDIR"/proprietary
++
+     if [ "$SRC" = "adb" ]; then
+         init_adb_connection
+     fi
+ 
+     if [ "$VENDOR_STATE" -eq "0" ]; then
+         echo "Cleaning output directory ($OUTPUT_ROOT).."
+-        rm -rf "${OUTPUT_ROOT:?}/"*
++        rm -rf "${OUTPUT_TMP:?}"
++        mkdir -p "${OUTPUT_TMP:?}"
++        mv "${OUTPUT_ROOT:?}/"* "${OUTPUT_TMP:?}/"
+         VENDOR_STATE=1
+     fi
+ 
+@@ -730,11 +767,13 @@ function extract() {
+         local SPLIT=(${FILELIST[$i-1]//:/ })
+         local FILE="${SPLIT[0]#-}"
+         local OUTPUT_DIR="$OUTPUT_ROOT"
++        local TMP_DIR="$OUTPUT_TMP"
+         local TARGET=
+ 
+         if [ "$ARGS" = "rootfs" ]; then
+             TARGET="$FROM"
+             OUTPUT_DIR="$OUTPUT_DIR/rootfs"
++            TMP_DIR="$TMP_DIR/rootfs"
+         else
+             TARGET="system/$FROM"
+             FILE="system/$FILE"
+@@ -761,10 +800,13 @@ function extract() {
+             fi
+         else
+             # Try OEM target first
+-            cp "$SRC/$FILE" "$DEST"
++            if [ -f "$SRC/$FILE" ]; then
++                cp "$SRC/$FILE" "$DEST"
+             # if file does not exist try CM target
+-            if [ "$?" != "0" ]; then
++            elif [ -f "$SRC/$TARGET" ]; then
+                 cp "$SRC/$TARGET" "$DEST"
++            else
++                printf '    !! file not found in source\n'
+             fi
+         fi
+ 
+@@ -782,12 +824,39 @@ function extract() {
+             fi
+         fi
+ 
+-        local TYPE="${DIR##*/}"
+-        if [ "$TYPE" = "bin" -o "$TYPE" = "sbin" ]; then
+-            chmod 755 "$DEST"
+-        else
+-            chmod 644 "$DEST"
++        # Check pinned files
++        local HASH="${HASHLIST[$i-1]}"
++        if [ ! -z "$HASH" ] && [ "$HASH" != "x" ]; then
++            local KEEP=""
++            local TMP="$TMP_DIR/$FROM"
++            if [ -f "$TMP" ]; then
++                if [ ! -f "$DEST" ]; then
++                    KEEP="1"
++                else
++                    local DEST_HASH=$(sha1sum "$DEST" | awk '{print $1}' )
++                    if [ "$DEST_HASH" != "$HASH" ]; then
++                        KEEP="1"
++                    fi
++                fi
++                if [ "$KEEP" = "1" ]; then
++                    local TMP_HASH=$(sha1sum "$TMP" | awk '{print $1}' )
++                    if [ "$TMP_HASH" = "$HASH" ]; then
++                        printf '    + (keeping pinned file with hash %s)\n' "$HASH"
++                        cp -p "$TMP" "$DEST"
++                    fi
++                fi
++            fi
+         fi
++
++        if [ -f "$DEST" ]; then
++            local TYPE="${DIR##*/}"
++            if [ "$TYPE" = "bin" -o "$TYPE" = "sbin" ]; then
++                chmod 755 "$DEST"
++            else
++                chmod 644 "$DEST"
++            fi
++        fi
++
+     done
+ 
+     # Don't allow failing
+-- 
+2.15.0
+

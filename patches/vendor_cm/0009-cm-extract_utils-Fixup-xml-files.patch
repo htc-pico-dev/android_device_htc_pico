@@ -1,0 +1,48 @@
+From 15d93e988fa4ed2d6868dd687ec453f92453ef1a Mon Sep 17 00:00:00 2001
+From: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date: Sat, 30 Jul 2016 12:08:25 +0200
+Subject: [PATCH 09/39] cm: extract_utils: Fixup xml files
+
+Change-Id: Icb8efcca0e6e37a3ea7432716fcbfbd631d96c19
+---
+ build/tools/extract_utils.sh | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/build/tools/extract_utils.sh b/build/tools/extract_utils.sh
+index b4b8fafe..309a8a9b 100644
+--- a/build/tools/extract_utils.sh
++++ b/build/tools/extract_utils.sh
+@@ -652,6 +652,21 @@ function init_adb_connection() {
+     sleep 0.3
+ }
+ 
++#
++# fix_xml:
++#
++# $1: xml file to fix
++#
++function fix_xml() {
++    local XML="$1"
++    local TEMP_XML="$TMPDIR/`basename "$XML"`.temp"
++
++    grep '^<?xml version' "$XML" > "$TEMP_XML"
++    grep -v '^<?xml version' "$XML" >> "$TEMP_XML"
++
++    mv "$TEMP_XML" "$XML"
++}
++
+ #
+ # extract:
+ #
+@@ -739,6 +754,8 @@ function extract() {
+                     rm "$TMPDIR/classes.dex"
+                     printf '    (updated %s from odex files)\n' "/$FILE"
+                 fi
++            elif [[ "$DEST" =~ .xml$ ]]; then
++                fix_xml "$DEST"
+             fi
+         fi
+ 
+-- 
+2.15.0
+

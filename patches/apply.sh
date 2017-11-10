@@ -13,7 +13,7 @@ for i in $(find "$PATCHBASE"/* -type d); do
 	done
 	echo applying $PATCHNAME to $PATCHTARGET
 	cd "$CMBASE/$PATCHTARGET" || exit 1
-	find "$PATCHBASE/$PATCHNAME/" -regextype sed -regex ".*/.*.patch" 2> /dev/null | while read patch; do
+	find "$PATCHBASE/$PATCHNAME/" -regextype sed -regex ".*/.*.patch" 2> /dev/null | sort | while read patch; do
 		git apply --3way $patch || exit 1
 	done
 done

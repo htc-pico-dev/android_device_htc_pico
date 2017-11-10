@@ -1,0 +1,100 @@
+# audio
+etc/soundimage/srsfx_trumedia_voice.cfg
+lib/libaudioeq.so
+## golfu; hTC_Asia 2.00.707.1
+etc/soundimage/srsfx_trumedia_movie.cfg|7595b7865d62eefcaf567dec824b3aa14a0304bc
+etc/soundimage/srs_geq10.cfg|b4841a5f131a4a1a301d761f0006a0636f905f97
+etc/soundimage/srs_global.cfg|27aa8d37ce4c947474374e28cc4e5815b5122bf5
+## protou; HTC_Eu 1.18.401.1
+etc/soundimage/srs_bypass.cfg|271d229a4034d40a0316a40cc2772936216be03e
+etc/soundimage/srsfx_trumedia_51.cfg|c25631035f640670ddf25ee558fca2763aef066a
+etc/soundimage/srsfx_trumedia_music.cfg|d613c08dc6f592a1a959b8684a8455654738a9f0
+## protou; HTC_Eu 2.20.401.6
+lib/libhtc_acoustic.so|2b617e8c0ff482cdbb28226e8da81f77bba0d49f
+
+# bcm4330
+etc/firmware/BCM4330B1_002.001.003.0221.0228.hcd
+
+# camera
+lib/hw/camera.vendor.msm7x27a.so|8668428d9a80688a6f87259239ed34c5fc646f68
+## golfu; hTC_Asia 2.00.707.1
+bin/awb_camera|4f69e42f61a0d94301e3c26f4db219ee0422efd5
+bin/lsc_camera|94367242a7e18f0b56f19e34119926d41ccb4556
+bin/mm-qcamera-daemon|372a050bec6a26dc5e5770ed933f583612b6fa66
+lib/libcameraface.so|28926df9abc8637fda3784d67dc16328e8a6b26b
+lib/libcamerapp.so|86c578bda59a501d433c12fb2e592556833460c2
+lib/libchromatix_mt9t013_default_video.so|5d28f9977dfd7928de0ba41f5333f1ae2c40fe83
+lib/libchromatix_mt9t013_preview.so|bf0e0bec9d2ed50dbe52d01179304f378f5e62e2
+lib/libmmipl.so|80c9334cc2425ca7304321febfb9fa779ce15a06
+lib/libmmjpeg.so|2b6195095ff4f9f4601e5eef9016fa23951d7532
+lib/liboemcamera.so|068eb0566bfcf9dab7f14e75852068149578e9fa
+lib/libOlaEngine.so|85db0df428cf61148987474e7277512b561b2068
+
+# graphics
+## TeamHackLG
+etc/firmware/yamato_pfp.fw|b55a28fe0f6521c611fc82ac70121b08e0fd2c0c
+etc/firmware/yamato_pm4.fw|660195ada4fd0ce2c63aee00482de92cbd094971
+## d2lte; AU_LINUX_ANDROID_KK_2.7_RB1.04.04.00.007.018
+vendor/lib/egl/eglsubAndroid.so|d20651edbb5ac3484ca9f284d9be40fa2a05502b
+vendor/lib/egl/libEGL_adreno.so|e783677da36f3cc8d5676b2b30efc473c0c1b8d2
+vendor/lib/egl/libGLESv1_CM_adreno.so|5aca6ddfd4fc8107de9b8c5467a983413ca1b2bf
+vendor/lib/egl/libGLESv2_adreno.so|0e6d74c7361d4a604e500dc5ca634c497756c506
+vendor/lib/egl/libGLESv2S3D_adreno.so|9b64722d963c14975b6137f583cc3b087d2b3d31
+vendor/lib/egl/libq3dtools_adreno.so|0ed08d669b6c214f3262d3c5b4891543b269baad
+vendor/lib/libadreno_utils.so|cc431ee7cafccd15c02fbd1a50837c5e5f418c6b
+vendor/lib/libC2D2.so|140f575d914a1fc19c63294e150379b6e4c5481e
+vendor/lib/libc2d2_z180.so|5f6408481cb77d4b0c5d03dc898a35bfe4de30e9
+vendor/lib/libCB.so|0a543f3dc744d6127f64decbbeb78bb31ef95086
+vendor/lib/libgsl.so|190d21778951bbf21a182c9f8a8f78e0d5d082c5
+vendor/lib/libOpenCL.so|8940bb176d7929ac2833274e07ed3add9edf85e2
+vendor/lib/libOpenVG.so|76274b138f66d8d1783e4db5fd6e51b0172e4b0a
+vendor/lib/libsc-a2xx.so|a72a7cdd42ab5f1369ab94994f9d9f994ecc90a2
+
+# mm-audio
+## TeamHackLG; 83931108f1
+lib/libOmxAacDec.so|a8641adc70da3a936576ba6e55cb0f6017322825
+lib/libOmxAacEnc.so|9055f867054e7cee9b0e09f0ac82ae4136adbf32
+lib/libOmxAc3HwDec.so|20a9e27571f86541744400b61d59a971c3bc5fb5
+lib/libOmxAdpcmDec.so|caf6a7269e15d48d74b891242cb0756ad7e30e08
+lib/libOmxAmrDec.so|cfd47fb480bfba380e109f576edc2cbf4b39291e
+lib/libOmxAmrEnc.so|18e01ba208e2a86d836035251b8e3e4f17eab6f1
+lib/libOmxAmrRtpDec.so|5f347870633f90ecffbb6043c8c34f995d10dced
+lib/libOmxAmrwbDec.so|5d0f1b047f45f0d4931eb0ca594fc41c36ca1bc1
+lib/libOmxEvrcDec.so|803d409e15537d4bd16f127374bc453b1a1f35e2
+lib/libOmxEvrcEnc.so|f7fbeaf645f5083a32804fb69b884bbaeff5f68b
+lib/libOmxEvrcHwDec.so|63ccc31f7271ff5b8a05816c6a871e609412b06f
+lib/libOmxMp3Dec.so|235c016c634781b566fc152d79e9bf9196ba046b
+lib/libOmxQcelp13Dec.so|f8351b00f7929a1469b5b37b990714eaee962d15
+lib/libOmxQcelp13Enc.so|a82dfdb348129f0b678e99f6cd3bbf45acfeaeac
+lib/libOmxQcelpHwDec.so|af3d6ced651efa0ecbf534ef199a9d14ae5cab29
+lib/libOmxWmaDec.so|ee4cb7405a6b19c612ba8441b828615b8d0cb2a0
+
+# mm-video
+## golfu; hTC_Asia 2.00.707.1
+lib/libdivxdrmdecrypt.so|b9f4dd358d41786122713811be836f973016438b
+lib/libmm-adspsvc.so|537d6bbae84cf87f8d870896d3ff92b179035db1
+lib/libmmosal.so|990051e90c595b1da8041ab9596ad76dfd1d94e3
+lib/libmmparser_divxdrmlib.so|e3228e826847dead1b7f18f43de5af21608370be
+lib/libmmparser.so|914ae76b2e8894f81cb73e8e9427f7438c5ec808
+lib/libOmxH264Dec.so|871f0d7155427495dc2c97441b5331e47332fb7e
+lib/libOmxMpeg4Dec.so|9dfa4046cfc2a529ea989a1fc0a76e4a73542edf
+lib/libOmxVidEnc.so|b90a85dd8115922fd4a366b843088345e33472ec
+
+# sensors
+lib/hw/sensors.pico.so
+## protou; HTC_Eu 1.18.401.1
+bin/bma150_usr|6e511e841b607c5b1f8a09e73d5d1c96d0ab0115
+
+# ril
+## golfu; hTC_Asia 2.00.707.1
+bin/qmuxd|fedec80023ebeb7143b83168f0c94f1dc8214462
+lib/libhtc_ril.so|ec0b0ece5f3051d964d46e1e33b922ad26d02622
+
+# perf
+## golfu; hTC_Asia 2.00.707.1
+lib/libqc-opt.so|7304716f0229647b3b0f3d62bfb31303291123ee
+
+# misc
+## golfu; hTC_Asia 2.00.707.1
+bin/htc_ebdlogd|152ff99473b33e971c11968ac9835e29dffa6349
+bin/logcat2|93447dd68d2973ed3a3d5625cbd641498ece41f9

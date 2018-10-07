@@ -1,0 +1,10 @@
+RECOVERY_VARIANT := twrp
+
+DEVICE_RESOLUTION := 320x480
+RECOVERY_GRAPHICS_USE_LINELENGTH := true
+BOARD_CUSTOM_BOOTIMG_MK := device/htc/pico/customrecoveryimg.mk
+TW_THEME := watch_mdpi
+TW_TARGET_USES_QCOM_BSP := true
+TWHAVE_SELINUX := false
+TW_EXCLUDE_SUPERSU := true
+TW_OEM_BUILD := false

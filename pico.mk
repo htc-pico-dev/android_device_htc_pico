@@ -92,14 +92,16 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
 
 # Init
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/ramdisk/fstab.pico:root/fstab.pico \
-    $(LOCAL_PATH)/ramdisk/init.pico.rc:root/init.pico.rc \
-    $(LOCAL_PATH)/ramdisk/ueventd.pico.rc:root/ueventd.pico.rc \
-    $(LOCAL_PATH)/ramdisk/init.pico.usb.rc:root/init.pico.usb.rc
-    
+PRODUCT_PACKAGES += \
+    fstab.pico \
+    init.pico.rc \
+    init.pico.usb.rc \
+    ueventd.pico.rc
+
+# TWRP
 ifeq ($(WITH_TWRP),true)
-PRODUCT_COPY_FILES +=  $(LOCAL_PATH)/ramdisk/recovery/twrp.fstab:root/etc/twrp.fstab
+PRODUCT_PACKAGES += \
+    twrp.fstab
 endif
 
 # Camera

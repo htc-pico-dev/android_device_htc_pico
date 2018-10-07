@@ -82,7 +82,11 @@ BOARD_FLASH_BLOCK_SIZE := 262144
 
 # Inline kernel building
 TARGET_KERNEL_SOURCE := kernel/htc/pico
+ifeq ($(WITH_TWRP),true)
+TARGET_KERNEL_CONFIG := pico-recovery_defconfig
+else
 TARGET_KERNEL_CONFIG := pico_defconfig
+endif
 
 # Vold
 BOARD_VOLD_MAX_PARTITIONS := 24
@@ -148,6 +152,7 @@ TARGET_QCOM_MEDIA_VARIANT := caf
 # Recovery
 BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_RECOVERY_FSTAB := device/htc/pico/recovery.fstab
+TARGET_RECOVERY_PIXEL_FORMAT := "RGB_565"
 
 # RIL
 BOARD_USE_NEW_LIBRIL_HTC := true
@@ -190,16 +195,6 @@ TARGET_PROVIDES_LIBLIGHT := true
 TARGET_PROVIDES_POWERHAL := true
 
 # TWRP
-DEVICE_RESOLUTION := 320x480
-RECOVERY_GRAPHICS_USE_LINELENGTH := true
-TARGET_RECOVERY_PIXEL_FORMAT := "RGB_565"
 ifeq ($(WITH_TWRP),true)
-RECOVERY_VARIANT := twrp
-TARGET_KERNEL_CONFIG := pico-recovery_defconfig
-BOARD_CUSTOM_BOOTIMG_MK := device/htc/pico/ramdisk/recovery/customrecoveryimg.mk
-TW_THEME := watch_mdpi
-TW_TARGET_USES_QCOM_BSP := true
-TWHAVE_SELINUX := false
-TW_EXCLUDE_SUPERSU := true
-TW_OEM_BUILD := false
+include device/htc/pico/twrp.mk
 endif

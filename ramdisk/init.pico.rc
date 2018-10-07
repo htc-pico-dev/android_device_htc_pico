@@ -161,6 +161,14 @@ on boot
     # load kineto_gan.ko
     insmod /system/lib/modules/kineto_gan.ko
 
+on early-fs
+    start block_symlink
+
+    # make symlink nodes discoverable
+    wait /dev/block/mtd/by-name/system
+    chmod 755 /dev/block/mtd
+    chmod 755 /dev/block/mtd/by-name
+
 on fs
     # mount partitions
     mount_all /fstab.pico
@@ -306,4 +314,9 @@ service bugreport /system/bin/dumpstate -d -v -o /sdcard/bugreports/bugreport
 # disable auditd
 service_redefine auditd /system/bin/auditd -k
     class main
+    disabled
+
+# symlink mtd devices
+service block_symlink /sbin/block_symlink
+    oneshot
     disabled

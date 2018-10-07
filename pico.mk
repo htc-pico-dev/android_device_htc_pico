@@ -94,6 +94,7 @@ PRODUCT_COPY_FILES += \
 # Init
 PRODUCT_PACKAGES += \
     fstab.pico \
+    block_symlink \
     init.pico.rc \
     init.pico.usb.rc \
     ueventd.pico.rc

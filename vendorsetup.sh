@@ -20,4 +20,26 @@
 # In particular, you can add lunch options with the add_lunch_combo
 # function: add_lunch_combo generic-eng
 
+# frameworks/av
+repopick -f 231170
+repopick -f 231171
+repopick -f 231172
+
+# frameworks/base
+repopick -f 231169
+
+# frameworks/native
+repopick -f 231162
+repopick -f 70578
+
+# hardware/qcom/display-caf
+repopick -f 75260
+repopick -f 231168
+repopick -f 231166
+repopick -f 231167
+
+# vendor/cm
+repopick -f 231164
+repopick -f 231165
+
 add_lunch_combo lineage_pico-userdebug

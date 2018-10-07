@@ -303,3 +303,7 @@ service bugreport /system/bin/dumpstate -d -v -o /sdcard/bugreports/bugreport
     oneshot
     keycodes 115 272
 
+# disable auditd
+service_redefine auditd /system/bin/auditd -k
+    class main
+    disabled
